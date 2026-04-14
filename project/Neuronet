@@ -1,0 +1,95 @@
+#practice neural network
+import math
+from operator import add
+
+inputCache = [[0,0,0]]#,[100,50,0],[200,200,200],[950,376,215]]
+outputCache = [[0]]#,50,200,513.667]
+
+lr = 0.01
+A = lambda x: 1 / (1 + math.exp(-1 * x))
+dA = lambda x: A(x) * (1 - A(x))
+C = lambda x, y: (x - y) ** 2
+dC = lambda x, y: 2 * (x - y)
+weights = []
+biases = []
+
+numInputs = 3
+numNeurons = 2
+numHiddenLayers = 3
+numOutputs = 1
+
+def addListtoList(List, amt):
+    temp = []
+    for i in range(amt):
+        temp.append(1)
+    List.append(temp)
+
+def init_layers(hiddenLayers, n, inputs, outputs):
+    connections = n * inputs + n * outputs + (n ** 2) * (numHiddenLayers - 1)
+    biases.append("Layer0")
+    weights.append("Layer0")
+    weights.append([])
+    if numHiddenLayers > 0:
+        for i in range(hiddenLayers):
+            addListtoList(biases, n)
+        addListtoList(biases, outputs)
+        
+        for i in range(n):
+            addListtoList(weights[1],inputs)
+        for i in range(hiddenLayers - 1):
+            weights.append([])
+            for i in range(n):
+                addListtoList(weights[-1],n)
+        for i in range(outputs):
+            weights.append([])
+            addListtoList(weights[-1],n)
+    else:
+        addListtoList(biases, outputs)
+        weights.append.append([])
+        for i in range(outputs):
+            addListtoList(weights[1],inputs)
+
+def trainNetwork(iterations, learningRate):
+    # for epoch in range(iterations):
+    for subListIndex in range(len(inputCache)):
+
+        weightedSums = []
+        weightedSums.append(inputCache[subListIndex])
+        for i in range(numHiddenLayers):
+            addListtoList(weightedSums, numNeurons)
+        addListtoList(weightedSums, numOutputs)
+        z = weightedSums
+        
+        #calculating weighted sums (maps input(s) to output(s))
+        for indexValue, L in enumerate(weightedSums):
+            if indexValue > 0:
+                for j in range(len(L)):
+                    temp = 0
+                    for i in range(len(weightedSums[indexValue - 1])):
+                        temp += weights[indexValue][j][i] * weightedSums[indexValue - 1][i]
+                    temp += biases[indexValue][j]
+                    z[indexValue][j] = temp
+                    weightedSums[indexValue][j] = A(temp)
+        
+        #finding delta for gradients
+        deltas = []
+        for i in range(numHiddenLayers):
+            addListtoList(deltas, numNeurons)
+        addListtoList(deltas, numOutputs)
+        for j, delta in enumerate(deltas[-1]):
+            delta = dC(weightedSums[-1][j] * dA(z[-1][j]))
+        for index in range(numHiddenLayers):
+            for delta in deltas[1-index]:
+                SUM = 0
+                for j in range(len(deltas[-index])):
+                    SUM += weights[-index][j] * deltas[-index][j]
+                delta = SUM * dA(weightedSums[1-index][deltas.index(delta)])
+        print(deltas)
+        
+
+
+
+            
+        
+init_layers(numHiddenLayers,numNeurons,numInputs,numOutputs)  
+trainNetwork(1000, lr)
