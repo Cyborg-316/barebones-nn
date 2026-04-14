@@ -7,9 +7,9 @@
 import math
 
 inputCache = [[0,0,0]]#,[100,50,0],[200,200,200],[950,376,215]]
-outputCache = [[0]]#,50,200,513.667]
+outputCache = [[1]]#,[50],[200],[513.667]]
 
-lr = 0.01
+lr = 0.5
 A = lambda x: 1 / (1 + math.exp(-1 * x))
 dA = lambda x: A(x) * (1 - A(x))
 C = lambda x, y: (x - y) ** 2
@@ -54,64 +54,64 @@ def init_layers(hiddenLayers, n, inputs, outputs):
             addListtoList(weights[1],inputs)
 
 def trainNetwork(iterations, learningRate):
-    # for epoch in range(iterations):
-    for subListIndex in range(len(inputCache)):
-        #initializing the lists for the forward pass
-        outputs = outputCache[subListIndex]
-        output = outputs[0]
-        weightedSums = []
-        weightedSums.append(inputCache[subListIndex])
-        for i in range(numHiddenLayers):
-            addListtoList(weightedSums, numNeurons)
-        addListtoList(weightedSums, numOutputs)
-        z = weightedSums
-        
-        #calculating weighted sums (maps input(s) to output(s))
-        for indexValue, L in enumerate(weightedSums):
-            if indexValue > 0:
-                for j in range(len(L)):
-                    temp = 0
-                    for i in range(len(weightedSums[indexValue - 1])):
-                        temp += weights[indexValue][j][i] * weightedSums[indexValue - 1][i]
-                    temp += biases[indexValue][j]
-                    z[indexValue][j] = temp
-                    weightedSums[indexValue][j] = A(temp)
-        
-        #finding delta for gradients
-        deltas = []
-        for i in range(numHiddenLayers):
-            addListtoList(deltas, numNeurons)
-        addListtoList(deltas, numOutputs)
-        for j, delta in enumerate(deltas[-1]):
-            delta = dC(weightedSums[-1][j] * dA(z[-1][j]), output)
-        for temp in range(numHiddenLayers):
-            indexLayer = numHiddenLayers - temp - 1
-            for index, delta in enumerate(deltas[indexLayer]):
-                sum = 0
-                for j in range(len(deltas[indexLayer + 1])):
-                    sum += weights[indexLayer + 1][j][index] * deltas[indexLayer + 1][j]
-                delta = sum * dA(z[indexLayer][index])
-        
-        #updating weights and biases
-        print(biases)
-        for indexLayer, layer in enumerate(biases):
-            if indexLayer > 0:
-                for j, bias in enumerate(layer):
-                    print(indexLayer, j)
-                    bias -= lr * deltas[indexLayer][j]
-        print(weights)
-        for indexLayer, layer in enumerate(weights):
-            if indexLayer > 0:
-                for j, temp in enumerate(layer):
-                    for i, weight in enumerate(temp):
-                        weight -= lr * deltas[indexLayer][j] * weightedSums[indexLayer - 1][i]
-        print(weights,biases)
-        
-        
+        for epoch in range(iterations):
+            for subListIndex in range(len(inputCache)):
+                #initializing the lists for the forward pass
+                outputs = outputCache[subListIndex]
+                output = outputs[0]
+                weightedSums = []
+                weightedSums.append(inputCache[subListIndex])
+                for i in range(numHiddenLayers):
+                    addListtoList(weightedSums, numNeurons)
+                addListtoList(weightedSums, numOutputs)
+                z = weightedSums
+                
+                #calculating weighted sums (maps input(s) to output(s))
+                for indexValue, L in enumerate(weightedSums):
+                    if indexValue > 0:
+                        for j in range(len(L)):
+                            temp = 0
+                            for i in range(len(weightedSums[indexValue - 1])):
+                                temp += weights[indexValue][j][i] * weightedSums[indexValue - 1][i]
+                            temp += biases[indexValue][j]
+                            z[indexValue][j] = temp
+                            weightedSums[indexValue][j] = A(temp)
+                
+                #finding delta for gradients
+                deltas = ['layer0']
+                for i in range(numHiddenLayers):
+                    addListtoList(deltas, numNeurons)
+                addListtoList(deltas, numOutputs)
 
-
-
-            
-        
+                for j in range(len(deltas[-1])):
+                    deltas[-1][j] = dC(weightedSums[-1][j], output)  * dA(z[-1][j])
+                for temp in range(numHiddenLayers):
+                    indexLayer = numHiddenLayers - temp
+                    for j in range(len(deltas[indexLayer])):
+                        summ = 0
+                        for k in range(len(deltas[indexLayer + 1])):
+                            summ += weights[indexLayer][k][j] * deltas[indexLayer + 1][k]
+                        deltas[indexLayer][j] = summ * dA(z[indexLayer][j])
+                    
+                #updating weights and biases    
+                for indexLayer, layer in enumerate(weights):
+                    if indexLayer > 0:
+                        for j, temp in enumerate(layer):
+                            for i in range(len(temp)):
+                                weights[indexLayer][j][i] -= lr * deltas[indexLayer][j] * weightedSums[indexLayer - 1][i]
+                
+                for indexLayer, layer in enumerate(biases):
+                    if indexLayer > 0:
+                        for j, bias in enumerate(layer):
+                            biases[indexLayer][j] -= lr * deltas[indexLayer][j]
+                            
+                print(weightedSums[-1][0])
+    
+    
+    
 init_layers(numHiddenLayers,numNeurons,numInputs,numOutputs)  
 trainNetwork(1000, lr)
+print(weights)
+print(biases)
+
+
