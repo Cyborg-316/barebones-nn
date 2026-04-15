@@ -1,17 +1,16 @@
 # practice neural network
 # Assuming 1 output for now, will add more later
-# Will be using backpropagation to train the network, 
-# will be using mean squared error as the cost function, 
+# Will be using backpropagation to train the network,
+# will be using mean squared error as the cost function,
 # and sigmoid as the activation function
 
 import math
+import random
 
-inputCache = [[0,0,0]]#,[100,50,0],[200,200,200],[950,376,215]]
-outputCache = [[.5]]#,[50],[200],[513.667]]
+inputCache = [[0,0,0],[100,50,0],[200,200,200],[950,376,215]]
+outputCache = [[0],[150],[600],[1541]]
 
 lr = 0.5
-A = lambda x: 1 / (1 + math.exp(-1 * x))
-dA = lambda x: A(x) * (1 - A(x))
 C = lambda x, y: (x - y) ** 2
 dC = lambda x, y: 2 * (x - y)
 weights = []
@@ -22,10 +21,16 @@ numNeurons = 2
 numHiddenLayers = 3
 numOutputs = 1
 
+def relu(x):
+    return max(0, x)
+
+def d_relu(x):
+    return 1 if x > 0 else 0
+
 def addListtoList(List, amt):
     temp = []
     for i in range(amt):
-        temp.append(1)
+        temp.append(1)#random.uniform(-10,10))
     List.append(temp)
 
 def init_layers(hiddenLayers, n, inputs, outputs):
@@ -52,13 +57,28 @@ def init_layers(hiddenLayers, n, inputs, outputs):
         weights.append.append([])
         for i in range(outputs):
             addListtoList(weights[1],inputs)
+            
+def find_output(z, weightedSums):
+    for indexValue, L in enumerate(weightedSums):
+        if indexValue > 0:
+            for j in range(len(L)):
+                temp = 0
+                for i in range(len(weightedSums[indexValue - 1])):
+                    temp += weights[indexValue][j][i] * weightedSums[indexValue - 1][i]
+                temp += biases[indexValue][j]
+                z[indexValue][j] = temp
+                weightedSums[indexValue][j] = relu(temp)
+    predicted = z[-1][0]
+    return predicted
 
 def trainNetwork(iterations, learningRate):
         for epoch in range(iterations):
             for subListIndex in range(len(inputCache)):
-                #initializing the lists for the forward pass
+                #forward pass
                 outputs = outputCache[subListIndex]
                 output = outputs[0]
+                inputList = inputCache[subListIndex]
+                
                 weightedSums = []
                 weightedSums.append(inputCache[subListIndex])
                 for i in range(numHiddenLayers):
@@ -67,15 +87,9 @@ def trainNetwork(iterations, learningRate):
                 z = weightedSums
                 
                 #calculating weighted sums (maps input(s) to output(s))
-                for indexValue, L in enumerate(weightedSums):
-                    if indexValue > 0:
-                        for j in range(len(L)):
-                            temp = 0
-                            for i in range(len(weightedSums[indexValue - 1])):
-                                temp += weights[indexValue][j][i] * weightedSums[indexValue - 1][i]
-                            temp += biases[indexValue][j]
-                            z[indexValue][j] = temp
-                            weightedSums[indexValue][j] = A(temp)
+                
+                predicted = find_output(z, weightedSums)
+                
                 
                 #finding delta for gradients
                 deltas = ['layer0']
@@ -84,16 +98,16 @@ def trainNetwork(iterations, learningRate):
                 addListtoList(deltas, numOutputs)
 
                 for j in range(len(deltas[-1])):
-                    deltas[-1][j] = dC(weightedSums[-1][j], output)  * dA(z[-1][j])
+                    deltas[-1][j] = dC(predicted, output)
                 for temp in range(numHiddenLayers):
                     indexLayer = numHiddenLayers - temp
                     for j in range(len(deltas[indexLayer])):
                         summ = 0
                         for k in range(len(deltas[indexLayer + 1])):
                             summ += weights[indexLayer][k][j] * deltas[indexLayer + 1][k]
-                        deltas[indexLayer][j] = summ * dA(z[indexLayer][j])
+                        deltas[indexLayer][j] = summ * d_relu(z[indexLayer][j])
                     
-                #updating weights and biases    
+                #updating weights and biases
                 for indexLayer, layer in enumerate(weights):
                     if indexLayer > 0:
                         for j, temp in enumerate(layer):
@@ -104,14 +118,30 @@ def trainNetwork(iterations, learningRate):
                     if indexLayer > 0:
                         for j, bias in enumerate(layer):
                             biases[indexLayer][j] -= lr * deltas[indexLayer][j]
-                            
-                print(weightedSums[-1][0])
+
+
     
     
+init_layers(numHiddenLayers,numNeurons,numInputs,numOutputs)
+trainNetwork(5, lr)
+for i in range(len(inputCache)):
+    #forward pass
+    outputs = outputCache[i]
+    output = outputs[0]
+    inputList = inputCache[i]
     
-init_layers(numHiddenLayers,numNeurons,numInputs,numOutputs)  
-trainNetwork(1000, lr)
-print(weights)
-print(biases)
+    weightedSums = []
+    weightedSums.append(inputCache[i])
+    for i in range(numHiddenLayers):
+        addListtoList(weightedSums, numNeurons)
+    addListtoList(weightedSums, numOutputs)
+    z = weightedSums
+    
+    #calculating weighted sums (maps input(s) to output(s))
+    
+    predicted = find_output(z, weightedSums)
+    print("Predicted: ", predicted, "actual:", output)
+
+
 
 
