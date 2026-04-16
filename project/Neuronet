@@ -7,30 +7,30 @@
 import math
 import random
 
-inputCache = [[0,0,0],[100,50,0],[200,200,200],[950,376,215]]
-outputCache = [[0],[150],[600],[1541]]
+inputCache = [[0,0],[1,1],[2,5],[3,10],[4,20],[5,-4]]
+outputCache = [[0],[1],[10],[30],[80],[-20]]
 
-lr = 0.5
+lr = 0.001
 C = lambda x, y: (x - y) ** 2
 dC = lambda x, y: 2 * (x - y)
 weights = []
 biases = []
 
-numInputs = 3
+numInputs = 2
 numNeurons = 2
 numHiddenLayers = 3
 numOutputs = 1
 
 def relu(x):
-    return max(0, x)
+    return max(0.02*x, x)
 
 def d_relu(x):
-    return 1 if x > 0 else 0
+    return 1 if x > 0 else 0.02
 
 def addListtoList(List, amt):
     temp = []
     for i in range(amt):
-        temp.append(1)#random.uniform(-10,10))
+        temp.append(2)#random.uniform(0,1))
     List.append(temp)
 
 def init_layers(hiddenLayers, n, inputs, outputs):
@@ -54,7 +54,7 @@ def init_layers(hiddenLayers, n, inputs, outputs):
             addListtoList(weights[-1],n)
     else:
         addListtoList(biases, outputs)
-        weights.append.append([])
+        weights.append([])
         for i in range(outputs):
             addListtoList(weights[1],inputs)
             
@@ -123,7 +123,7 @@ def trainNetwork(iterations, learningRate):
     
     
 init_layers(numHiddenLayers,numNeurons,numInputs,numOutputs)
-trainNetwork(5, lr)
+trainNetwork(1, lr)
 for i in range(len(inputCache)):
     #forward pass
     outputs = outputCache[i]
@@ -140,7 +140,9 @@ for i in range(len(inputCache)):
     #calculating weighted sums (maps input(s) to output(s))
     
     predicted = find_output(z, weightedSums)
-    print("Predicted: ", predicted, "actual:", output)
+    print(f"Predicted: {predicted:1f} Actual:", output)
+print("weights:", weights)
+print("biases:", biases)
 
 
 
