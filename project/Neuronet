@@ -23,7 +23,7 @@ numOutputs = 1
 def setCaches():
     for i in range(10):
         val = [i]
-        val2 = [7 * val[0]]
+        val2 = [67 * val[0]]
         inputCache.append(val)
         outputCache.append(val2)
 
