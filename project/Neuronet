@@ -3,25 +3,52 @@
 # Will be using backpropagation to train the network,
 # will be using mean squared error as the cost function,
 # and sigmoid as the activation function
-# version 1.0.0
+# version 1.0.1
 
 import math
 import random
 
-inputCache = [[-5],[-4],[-3],[-2],[-1],[0],[1],[2],[3],[4],[5]]
-outputCache = [[25],[16],[9],[4],[1],[0],[1],[4],[9],[16],[25]]
-
+inputCache = []#[[-5],[-4],[-3],[-2],[-1],[0],[1],[2],[3],[4],[5]]
+outputCache = []#[[25],[16],[9],[4],[1],[0],[1],[4],[9],[16],[25]]
 
 lr = 0.01
-C = lambda x, y: (x - y) ** 2
-dC = lambda x, y: 2 * (x - y)
 weights = []
 biases = []
 
 numInputs = 1
-numNeurons = 3
-numHiddenLayers = 2
+numNeurons = 0
+numHiddenLayers = 0
 numOutputs = 1
+
+def setCaches():
+    for i in range(10):
+        val = [i]
+        val2 = [7 * val[0]]
+        inputCache.append(val)
+        outputCache.append(val2)
+
+def Cost(x, y):
+    return (x - y) ** 2
+
+def dCost(x,y):
+    return 2 * (x - y)
+
+def shuffleData(data, data2):
+    newData = data
+    newData2 = data2
+    for epoch in range(100):
+        index = random.randint(0,len(newData)) - 1
+        index2 = random.randint(0,len(newData)) - 1
+        while index2 == index:
+            index2 = random.randint(0,len(newData)) - 1
+        temp = newData[index2]
+        newData[index2] = newData[index]
+        newData[index] = temp
+
+        temp = newData2[index2]
+        newData2[index2] = newData2[index]
+        newData2[index] = temp
+        return newData, newData2
 
 def relu(x):
     return max(0, x)
@@ -32,7 +59,7 @@ def d_relu(x):
 def addListtoList(List, amt):
     temp = []
     for i in range(amt):
-        temp.append(0)#random.uniform(0,1))
+        temp.append(2)#random.uniform(0,1))
     List.append(temp)
 
 def init_layers(hiddenLayers, n, inputs, outputs):
@@ -85,7 +112,7 @@ def trainNetwork(iterations, learningRate):
                 outputs = outputCache[subListIndex]
                 inputs = inputCache[subListIndex]
                 #outputs = list(map(lambda x: normalize(x, max(outputs)), outputs))
-                inputs = list(map(lambda x: normalize(x, max(inputs), min(inputs)), inputs))
+                #inputs = list(map(lambda x: normalize(x, max(inputs), min(inputs)), inputs))
                 
                 weightedSums = []
                 weightedSums.append(inputs)
@@ -105,7 +132,7 @@ def trainNetwork(iterations, learningRate):
                 addListtoList(deltas, numOutputs)
 
                 for j in range(len(deltas[-1])):
-                    deltas[-1][j] = dC(predicted, outputs[0])
+                    deltas[-1][j] = dCost(predicted, outputs[0])
                 for indexLayer in reversed(range(len(deltas) - 1)):
                     if indexLayer > 0:
                         for i in range(len(deltas[indexLayer])):
@@ -126,9 +153,10 @@ def trainNetwork(iterations, learningRate):
                         for j in range(len(layer)):
                             biases[indexLayer][j] -= lr * deltas[indexLayer][j]
 
-
+setCaches()
+inputCache, outputCache = shuffleData(inputCache, outputCache)
 init_layers(numHiddenLayers,numNeurons,numInputs,numOutputs)
-trainNetwork(10000, lr)
+trainNetwork(100000, lr)
 for i in range(len(inputCache)):
     #forward pass
     outputs = outputCache[i]
@@ -145,6 +173,6 @@ for i in range(len(inputCache)):
     #calculating weighted sums (maps input(s) to output(s))
     
     predicted = find_output(z, weightedSums)
-    print(f"Predicted: {predicted:1f} Actual:", output)
+    print(f"Predicted: {predicted:1f}      Actual: {output}      Cost:", Cost(predicted, output))
 print(weights)
 print(biases)
