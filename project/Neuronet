@@ -1,30 +1,25 @@
 # practice neural network
-# version 1.0.2
+# version 1.0.3
 
 import math
 import random
 
-inputCache = []#[[-5],[-4],[-3],[-2],[-1],[0],[1],[2],[3],[4],[5]]
-outputCache = []#[[25],[16],[9],[4],[1],[0],[1],[4],[9],[16],[25]]
+inputCache = []
+outputCache = []
 
 lr = 0.001
 weights = []
 biases = []
 
 numInputs = 1
-numNeurons = 3
-numHiddenLayers = 3
+numNeurons = 10
+numHiddenLayers = 2
 numOutputs = 1
 
-def setCaches():
-    for i in range(10):
+def setCaches(size):
+    for i in range(size + 1):
         val = [i]
-        val2 = [4 * val[0]]
-        inputCache.append(val)
-        outputCache.append(val2)
-    for i in range(10):
-        val = [-i]
-        val2 = [0]
+        val2 = [val[0] ** 2]
         inputCache.append(val)
         outputCache.append(val2)
 
@@ -63,21 +58,36 @@ def sigmoid(x):
 def d_sigmoid(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
+def average(data):
+    return sum(data) / len(data)
+
+def maxData(data):
+    temp = []
+    for i in range(len(data)):
+        temp.append(data[i][0])
+    return max(temp)
+
 def addListtoList(List, amt):
     temp = []
     for i in range(amt):
-        temp.append(random.uniform(0,1))
+        temp.append(random.uniform(-0.05,0.05))
+    List.append(temp)
+
+def addListtoListVal(List, amt, Value):
+    temp = []
+    for i in range(amt):
+        temp.append(Value)
     List.append(temp)
 
 def init_layers(hiddenLayers, n, inputs, outputs):
     connections = n * inputs + n * outputs + (n ** 2) * (numHiddenLayers - 1)
-    biases.append("L")
-    weights.append("L")
+    biases.append(0)
+    weights.append(0)
     weights.append([])
     if numHiddenLayers > 0:
         for i in range(hiddenLayers):
-            addListtoList(biases, n)
-        addListtoList(biases, outputs)
+            addListtoListVal(biases, n, 0)
+        addListtoListVal(biases, outputs, 0)
         
         for i in range(n):
             addListtoList(weights[1],inputs)
@@ -89,8 +99,7 @@ def init_layers(hiddenLayers, n, inputs, outputs):
             weights.append([])
             addListtoList(weights[-1],n)
     else:
-        addListtoList(biases, outputs)
-        weights.append([])
+        addListtoListVal(biases, outputs, 0)
         for i in range(outputs):
             addListtoList(weights[1],inputs)
             
@@ -115,81 +124,145 @@ def find_output(z, activation):
     predicted = z[-1][0]
     return predicted
     
-def normalize(n, maxValue, minValue):
-    if maxValue - minValue == 0:
-        return 0
-    return (n - minValue) / (maxValue - minValue)
+def normalize(data):
+    maxVal = maxData(data)
+
+    normalizedData = []
+    for i in range(len(data)):
+        addListtoList(normalizedData, 1)
+
+    for i in range(len(data)):
+        normalizedData[i][0] = data[i][0] / maxVal
+
+    return normalizedData
 
 def trainNetwork(iterations, learningRate):
-        for epoch in range(iterations):
-            for subListIndex in range(len(inputCache)):
-                #forward pass
-                outputs = outputCache[subListIndex]
-                inputs = inputCache[subListIndex]
-                #outputs = list(map(lambda x: normalize(x, max(outputs)), outputs))
-                #inputs = list(map(lambda x: normalize(x, max(inputs), min(inputs)), inputs))
-                
-                activations = []
-                activations.append(inputs)
-                for i in range(numHiddenLayers):
-                    addListtoList(activations, numNeurons)
-                addListtoList(activations, numOutputs)
-                z = activations
+    for epoch in range(iterations):
+        global inputCache
+        global outputCache
 
-                #calculating weighted sums (maps input(s) to output(s))
-                predicted = find_output(z, activations)
-                
-                #finding delta for gradients
-                deltas = []
-                deltas.append(inputs)
-                for i in range(numHiddenLayers):
-                    addListtoList(deltas, numNeurons)
-                addListtoList(deltas, numOutputs)
+        weightGradients = []
+        biasGradients = []
+        weightGradients.append(0)
+        biasGradients.append(0)
+        weightGradients.append([])
+        if numHiddenLayers > 0:
+            for i in range(numHiddenLayers):
+                addListtoListVal(biasGradients, numNeurons, 0)
+            addListtoListVal(biasGradients, numOutputs, 0)
 
-                for j in range(len(deltas[-1])):
-                    deltas[-1][j] = dCost(predicted, outputs[0]) * d_relu(z[-1][j])
-                for indexLayer in reversed(range(len(deltas) - 1)):
-                    if indexLayer > 0:
-                        for i in range(len(deltas[indexLayer])):
-                            summ = 0
-                            for j in range(len(deltas[indexLayer + 1])):
-                                summ += weights[indexLayer + 1][j][i] * deltas[indexLayer + 1][j]
-                            deltas[indexLayer][i] = summ * d_relu(z[indexLayer][i])
+            for i in range(numNeurons):
+                addListtoListVal(weightGradients[1], numInputs, 0)
+            for i in range(numHiddenLayers - 1):
+                weightGradients.append([])
+                for i in range(numNeurons):
+                    addListtoListVal(weightGradients[-1], numNeurons, 0)
+            for i in range(numOutputs):
+                weightGradients.append([])
+                addListtoListVal(weightGradients[-1], numNeurons, 0)
+        else:
+            for i in range(numOutputs):
+                addListtoListVal(weightGradients[1], numInputs, 0)
+            addListtoListVal(biasGradients, numOutputs, 0)
 
-                #updating weights and biases
-                for indexLayer in range(len(weights)):
-                    if indexLayer > 0:
-                        for j in range(len(weights[indexLayer])):
-                            for i in range(len(weights[indexLayer][j])):
-                                weights[indexLayer][j][i] -= lr * deltas[indexLayer][j] * activations[indexLayer - 1][i]
-                
-                for indexLayer, layer in enumerate(biases):
-                    if indexLayer > 0:
-                        for j in range(len(layer)):
-                            biases[indexLayer][j] -= lr * deltas[indexLayer][j]
+        for subListIndex in range(len(inputCache)):
+            #forward pass
+            outputs = outputCache[subListIndex]
+            inputs = inputCache[subListIndex]
+            
+            activations = []
+            activations.append(inputs)
+            for i in range(numHiddenLayers):
+                addListtoList(activations, numNeurons)
+            addListtoList(activations, numOutputs)
+            z = activations
+
+            predicted = find_output(z, activations)
+            
+            #back prop
+            deltas = []
+            deltas.append(inputs)
+            for i in range(numHiddenLayers):
+                addListtoList(deltas, numNeurons)
+            addListtoList(deltas, numOutputs)
+
+            for j in range(len(deltas[-1])):
+                deltas[-1][j] = dCost(predicted, outputs[0]) / len(inputCache)
+            for indexLayer in reversed(range(len(deltas) - 1)):
+                if indexLayer > 0:
+                    for i in range(len(deltas[indexLayer])):
+                        summ = 0
+                        for j in range(len(deltas[indexLayer + 1])):
+                            summ += weights[indexLayer + 1][j][i] * deltas[indexLayer + 1][j]
+                        deltas[indexLayer][i] = summ * d_relu(z[indexLayer][i])
+
+            #updating gradients
+            for indexLayer in range(len(weights)):
+                if indexLayer > 0:
+                    for j in range(len(weights[indexLayer])):
+                        for i in range(len(weights[indexLayer][j])):
+                            gradient = deltas[indexLayer][j] * activations[indexLayer - 1][i] + weightGradients[indexLayer][j][i]
+                            weightGradients[indexLayer][j][i] = gradient
+            
+            for indexLayer, layer in enumerate(biases):
+                if indexLayer > 0:
+                    for j in range(len(layer)):
+                        gradient = deltas[indexLayer][j] + biasGradients[indexLayer][j]
+                        biasGradients[indexLayer][j] = gradient
+
+        #updating weights and biases
+        for indexLayer in range(len(weights)):
+            if indexLayer > 0:
+                for j in range(len(weights[indexLayer])):
+                    for i in range(len(weights[indexLayer][j])):
+                        weights[indexLayer][j][i] -= lr * weightGradients[indexLayer][j][i]
+        
+        for indexLayer, layer in enumerate(biases):
+            if indexLayer > 0:
+                for j in range(len(layer)):
+                    biases[indexLayer][j] -= lr * biasGradients[indexLayer][j]
+
+        #shuffling data
+        inputCache, outputCache = shuffleData(inputCache, outputCache)
+        
 
 print("-------------------------RUNNING-------------------------")
-setCaches()
+
+setCaches(100)
 inputCache, outputCache = shuffleData(inputCache, outputCache)
+maxInput = maxData(inputCache)
+maxOutput = maxInput ** 2
+
+inputCache = normalize(inputCache)
+outputCache = normalize(outputCache)
 init_layers(numHiddenLayers,numNeurons,numInputs,numOutputs)
-trainNetwork(10000, lr)
+
+iterations = 1000
+trainNetwork(iterations, lr)
+totalCost = []
 for subListIndex in range(len(inputCache)):
     #forward pass
     outputs = outputCache[subListIndex]
+    inputs = inputCache[subListIndex]
+    inputt = inputs[0]
     output = outputs[0]
-    inputList = inputCache[subListIndex]
-    inputt = inputList[0]
-    
-    activation = []
-    activation.append(inputList)
+
+    activations = []
+    activations.append(inputs)
     for i in range(numHiddenLayers):
-        addListtoList(activation, numNeurons)
-    addListtoList(activation, numOutputs)
-    z = activation
-    
-    #calculating weighted sums (maps input(s) to output(s))
-    
-    predicted = find_output(z, activation)
-    print(f"Input: {inputt}          Predicted: {predicted:1f}      Actual: {output}      Cost:", Cost(predicted, output))
-print(weights)
-print(biases)
+        addListtoList(activations, numNeurons)
+    addListtoList(activations, numOutputs)
+    z = activations
+
+    predicted = find_output(z, activations)
+
+    printedPredicted = predicted * maxOutput
+    printedInput = inputt * maxInput
+    printedOutput = output * maxOutput
+    cost = Cost(printedPredicted, printedOutput)
+
+    print(f"Input: {printedInput:.0f}          Predicted: {printedPredicted:.2f}      Actual: {printedOutput:.0f}      Cost: {cost:0f}")
+    totalCost.append(cost)
+print(f"Average Cost: {average(totalCost):2f}                 Iterations:", iterations)
+
+
