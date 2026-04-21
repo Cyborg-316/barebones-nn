@@ -1,5 +1,5 @@
 # practice neural network
-# version 1.0.3
+# version 1.1.4
 
 import math
 import random
@@ -7,7 +7,7 @@ import random
 inputCache = []
 outputCache = []
 
-lr = 0.05
+lr = 0.01
 weights = []
 biases = []
 
@@ -244,7 +244,7 @@ inputCache = normalize(inputCache)
 outputCache = normalize(outputCache)
 init_layers(numHiddenLayers,numNeurons,numInputs,numOutputs)
 
-iterations = 10000
+iterations = 100
 trainNetwork(iterations, lr)
 totalCost = []
 for subListIndex in range(len(inputCache)):
