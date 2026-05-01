@@ -1,5 +1,5 @@
 # practice neural network
-# version 1.1.4
+# version 1.1.5
 
 import math
 import random
@@ -7,19 +7,19 @@ import random
 inputCache = []
 outputCache = []
 
-lr = 0.01
+lr = 0.1
 weights = []
 biases = []
 
 numInputs = 1
-numNeurons = 15
+numNeurons = 100
 numHiddenLayers = 1
 numOutputs = 1
 
 def setCaches(size):
     for i in range(size + 1):
         val = [i]
-        val2 = [(val[0] ** 2)]
+        val2 = [(val[0]) ** 2]
         inputCache.append(val)
         outputCache.append(val2)
 
@@ -92,8 +92,8 @@ def init_layers(hiddenLayers, n, inputs, outputs):
     weights.append([])
     if numHiddenLayers > 0:
         for i in range(hiddenLayers):
-            addListtoListVal(biases, n, 0)
-        addListtoListVal(biases, outputs, 0)
+            addListtoList(biases, n)
+        addListtoList(biases, outputs)
         
         for i in range(n):
             addListtoList(weights[1],inputs)
@@ -105,7 +105,7 @@ def init_layers(hiddenLayers, n, inputs, outputs):
             weights.append([])
             addListtoList(weights[-1],n)
     else:
-        addListtoListVal(biases, outputs, 0)
+        addListtoList(biases, outputs)
         for i in range(outputs):
             addListtoList(weights[1],inputs)
     
@@ -147,8 +147,8 @@ def trainNetwork(iterations, learningRate):
                 addListtoListVal(weightGradients[-1], numNeurons, 0)
         else:
             for i in range(numOutputs):
-                addListtoListVal(weightGradients[1], numInputs, 1)
-            addListtoListVal(biasGradients, numOutputs, 1)
+                addListtoListVal(weightGradients[1], numInputs, 0)
+            addListtoListVal(biasGradients, numOutputs, 0)
         
         for subListIndex in range(len(inputCache)):
             #forward pass
@@ -163,11 +163,11 @@ def trainNetwork(iterations, learningRate):
                 addListtoList(activations, numNeurons)
                 addListtoList(z, numNeurons)
             addListtoListVal(activations, numOutputs, 0)
-            addListtoListVal(z, numNeurons, 0)
+            addListtoListVal(z, numOutputs, 0)
 
-            for indexValue, L in enumerate(activations):
+            for indexValue, Layer in enumerate(activations):
                 if indexValue > 0 and indexValue < len(activations) - 1:
-                    for j in range(len(L)):
+                    for j in range(len(Layer)):
                         temp = 0
                         for i in range(len(activations[indexValue - 1])):
                             temp += weights[indexValue][j][i] * activations[indexValue - 1][i]
@@ -175,13 +175,13 @@ def trainNetwork(iterations, learningRate):
                         z[indexValue][j] = temp
                         activations[indexValue][j] = relu(temp)
                 elif indexValue == len(activations) - 1:
-                    for j in range(len(L)):
+                    for j in range(len(Layer)):
                         temp = 0
                         for i in range(len(activations[indexValue - 1])):
                             temp += weights[indexValue][j][i] * activations[indexValue - 1][i]
                         temp += biases[indexValue][j]
                         z[indexValue][j] = temp
-                        activations[indexValue][j] = temp
+                        activations[indexValue][j] = sigmoid(temp)
             predicted = z[-1][0]
             
             #back prop
@@ -199,7 +199,7 @@ def trainNetwork(iterations, learningRate):
                         summ = 0
                         for j in range(len(deltas[indexLayer + 1])):
                             summ += weights[indexLayer + 1][j][i] * deltas[indexLayer + 1][j]
-                        deltas[indexLayer][i] = summ * d_relu(z[indexLayer][i])
+                        deltas[indexLayer][i] = summ * d_sigmoid(z[indexLayer][i])
 
             #updating gradients
             for indexLayer in range(len(weights)):
@@ -235,7 +235,7 @@ def trainNetwork(iterations, learningRate):
 
 print("-------------------------RUNNING-------------------------")
 
-setCaches(10)
+setCaches(100)
 inputCache, outputCache = shuffleData(inputCache, outputCache)
 maxInput = maxData(inputCache)
 maxOutput = maxData(outputCache)
@@ -244,7 +244,7 @@ inputCache = normalize(inputCache)
 outputCache = normalize(outputCache)
 init_layers(numHiddenLayers,numNeurons,numInputs,numOutputs)
 
-iterations = 100
+iterations = 5000
 trainNetwork(iterations, lr)
 totalCost = []
 for subListIndex in range(len(inputCache)):
@@ -264,9 +264,9 @@ for subListIndex in range(len(inputCache)):
     addListtoListVal(activations, numOutputs, 0)
     addListtoListVal(z, numNeurons, 0)
 
-    for indexValue, L in enumerate(activations):
+    for indexValue, Layer in enumerate(activations):
         if indexValue > 0 and indexValue < len(activations) - 1:
-            for j in range(len(L)):
+            for j in range(len(Layer)):
                 temp = 0
                 for i in range(len(activations[indexValue - 1])):
                     temp += weights[indexValue][j][i] * activations[indexValue - 1][i]
@@ -274,7 +274,7 @@ for subListIndex in range(len(inputCache)):
                 z[indexValue][j] = temp
                 activations[indexValue][j] = relu(temp)
         elif indexValue == len(activations) - 1:
-            for j in range(len(L)):
+            for j in range(len(Layer)):
                 temp = 0
                 for i in range(len(activations[indexValue - 1])):
                     temp += weights[indexValue][j][i] * activations[indexValue - 1][i]
