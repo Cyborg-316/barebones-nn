@@ -7,14 +7,20 @@ import random
 inputCache = []
 outputCache = []
 
-lr = 0.1
+lr = 0.05
 weights = []
 biases = []
 
 numInputs = 1
-numNeurons = 100
+numNeurons = 10
 numHiddenLayers = 1
 numOutputs = 1
+
+def activation(x):
+    return sigmoid(x)
+
+def d_activiation(x):
+    return d_sigmoid(x)
 
 def setCaches(size):
     for i in range(size + 1):
@@ -173,7 +179,7 @@ def trainNetwork(iterations, learningRate):
                             temp += weights[indexValue][j][i] * activations[indexValue - 1][i]
                         temp += biases[indexValue][j]
                         z[indexValue][j] = temp
-                        activations[indexValue][j] = relu(temp)
+                        activations[indexValue][j] = activation(temp)
                 elif indexValue == len(activations) - 1:
                     for j in range(len(Layer)):
                         temp = 0
@@ -181,7 +187,7 @@ def trainNetwork(iterations, learningRate):
                             temp += weights[indexValue][j][i] * activations[indexValue - 1][i]
                         temp += biases[indexValue][j]
                         z[indexValue][j] = temp
-                        activations[indexValue][j] = sigmoid(temp)
+                        activations[indexValue][j] = activation(temp)
             predicted = z[-1][0]
             
             #back prop
@@ -199,7 +205,7 @@ def trainNetwork(iterations, learningRate):
                         summ = 0
                         for j in range(len(deltas[indexLayer + 1])):
                             summ += weights[indexLayer + 1][j][i] * deltas[indexLayer + 1][j]
-                        deltas[indexLayer][i] = summ * d_sigmoid(z[indexLayer][i])
+                        deltas[indexLayer][i] = summ * d_activiation(z[indexLayer][i])
 
             #updating gradients
             for indexLayer in range(len(weights)):
@@ -235,7 +241,7 @@ def trainNetwork(iterations, learningRate):
 
 print("-------------------------RUNNING-------------------------")
 
-setCaches(100)
+setCaches(10)
 inputCache, outputCache = shuffleData(inputCache, outputCache)
 maxInput = maxData(inputCache)
 maxOutput = maxData(outputCache)
@@ -244,7 +250,7 @@ inputCache = normalize(inputCache)
 outputCache = normalize(outputCache)
 init_layers(numHiddenLayers,numNeurons,numInputs,numOutputs)
 
-iterations = 5000
+iterations = 10000
 trainNetwork(iterations, lr)
 totalCost = []
 for subListIndex in range(len(inputCache)):
@@ -272,7 +278,7 @@ for subListIndex in range(len(inputCache)):
                     temp += weights[indexValue][j][i] * activations[indexValue - 1][i]
                 temp += biases[indexValue][j]
                 z[indexValue][j] = temp
-                activations[indexValue][j] = relu(temp)
+                activations[indexValue][j] = activation(temp)
         elif indexValue == len(activations) - 1:
             for j in range(len(Layer)):
                 temp = 0
