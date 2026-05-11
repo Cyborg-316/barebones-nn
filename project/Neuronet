@@ -1,5 +1,5 @@
 # practice neural network
-# version 1.1.5
+# version 1.1.6
 
 import math
 import random
@@ -7,13 +7,13 @@ import random
 inputCache = []
 outputCache = []
 
-lr = 0.05
+lr = 0.075
 weights = []
 biases = []
 
 numInputs = 1
-numNeurons = 10
-numHiddenLayers = 1
+numNeurons = 0
+numHiddenLayers = 0
 numOutputs = 1
 
 def activation(x):
@@ -25,7 +25,7 @@ def d_activiation(x):
 def setCaches(size):
     for i in range(size + 1):
         val = [i]
-        val2 = [(val[0]) ** 2]
+        val2 = [(val[0])]
         inputCache.append(val)
         outputCache.append(val2)
 
@@ -250,7 +250,7 @@ inputCache = normalize(inputCache)
 outputCache = normalize(outputCache)
 init_layers(numHiddenLayers,numNeurons,numInputs,numOutputs)
 
-iterations = 10000
+iterations = 5000
 trainNetwork(iterations, lr)
 totalCost = []
 for subListIndex in range(len(inputCache)):
